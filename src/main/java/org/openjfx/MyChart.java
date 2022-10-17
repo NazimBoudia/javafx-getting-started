@@ -23,7 +23,7 @@ public class MyChart extends VBox{
         return lc;
 
     }
-   public MyChart( ){
+   public MyChart(){
         getChildren().add(buildSampleLineChart());
     }
 }
