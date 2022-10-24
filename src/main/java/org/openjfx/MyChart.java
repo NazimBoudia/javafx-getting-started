@@ -12,12 +12,13 @@ import javafx.event.EventHandler;
 
 import java.util.Random;
 
-public class MyChart extends VBox{
+public class MyChart extends VBox {
     XYChart.Series<Double, Double> series = new XYChart.Series<>();
     LineChart lc = new LineChart(
             new NumberAxis("Time Constant ", 0.0, 5.0, 1),
             new NumberAxis("Voltage(Vs) ", 0.0, 1.0, 0.1)
     );
+
     public LineChart buildSampleLineChart() {
         series.getData().add(new XYChart.Data<>(0.0, 0.0));
         series.getData().add(new XYChart.Data<>(0.7, 0.5));
@@ -30,34 +31,45 @@ public class MyChart extends VBox{
         return lc;
 
     }
-   public MyChart(){
+
+    public void add(Double args) {
+        series.getData().add(new XYChart.Data<>(1.3, args));
+    }
+
+    public MyChart() {
         getChildren().add(buildSampleLineChart());
         Button myButton = new Button("Add random value");
-        Thread myThread = new Thread( new Runnable() {
+        myButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
-            public void run() {
-                Runnable updater = new Runnable() {
+            public void handle(ActionEvent actionEvent) {
+                Thread myThread = new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        Random rand = new Random();
-                        double randomT = 5 * rand.nextDouble();
-                        double randomV = rand.nextDouble();
-                        series.getData().add(new XYChart.Data<>(randomT, randomV));
-                    }
+                        Runnable updater = new Runnable() {
+                            @Override
+                            public void run() {
+                                Random rand = new Random();
+                                double randomT = 5 * rand.nextDouble();
+                                double randomV = rand.nextDouble();
+                                series.getData().add(new XYChart.Data<>(randomT, randomV));
+                            }
 
 
-                };
-                while (true){
-                    try{
-                        Thread.sleep(50);
-                } catch(InterruptedException e) {
+                        };
+                        while (true) {
+                            try {
+                                Thread.sleep(50);
+                            } catch (InterruptedException e) {
+                            }
+                            Platform.runLater(updater);
+                        }
                     }
-                    Platform.runLater(updater);
-                }
+                });
+                myThread.setDaemon(true);
+                myThread.start();
             }
         });
-        myThread.setDaemon(true);
-        myThread.start();
+
         getChildren().add(myButton);
     }
 }
