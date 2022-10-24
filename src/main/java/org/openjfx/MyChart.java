@@ -1,5 +1,6 @@
 package org.openjfx;
 
+import javafx.application.Platform;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
@@ -14,7 +15,7 @@ import java.util.Random;
 public class MyChart extends VBox{
     XYChart.Series<Double, Double> series = new XYChart.Series<>();
     LineChart lc = new LineChart(
-            new NumberAxis("Time Constant ", 0.0, 15.0, 1),
+            new NumberAxis("Time Constant ", 0.0, 5.0, 1),
             new NumberAxis("Voltage(Vs) ", 0.0, 1.0, 0.1)
     );
     public LineChart buildSampleLineChart() {
@@ -32,15 +33,31 @@ public class MyChart extends VBox{
    public MyChart(){
         getChildren().add(buildSampleLineChart());
         Button myButton = new Button("Add random value");
-        myButton.setOnAction(new EventHandler<ActionEvent>() {
+        Thread myThread = new Thread( new Runnable() {
             @Override
-            public void handle(ActionEvent actionEvent){
-                Random rand = new Random();
-                double randomT = 5*rand.nextDouble();
-                double randomV = rand.nextDouble();
-                series.getData().add(new XYChart.Data<>(randomT,randomV));
-           }
+            public void run() {
+                Runnable updater = new Runnable() {
+                    @Override
+                    public void run() {
+                        Random rand = new Random();
+                        double randomT = 5 * rand.nextDouble();
+                        double randomV = rand.nextDouble();
+                        series.getData().add(new XYChart.Data<>(randomT, randomV));
+                    }
+
+
+                };
+                while (true){
+                    try{
+                        Thread.sleep(50);
+                } catch(InterruptedException e) {
+                    }
+                    Platform.runLater(updater);
+                }
+            }
         });
+        myThread.setDaemon(true);
+        myThread.start();
         getChildren().add(myButton);
     }
 }
